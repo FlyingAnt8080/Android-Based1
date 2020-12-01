@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<litepal>
+    <!--数据库名-->
+    <dbname value="BookStore" />
+    <!--定义数据库的版本-->
+    <version value="3"/>
+    <!--指定所有的映射模型-->
+    <list>
+        <mapping class="com.suse.litepaltest.Book"/>
+        <mapping class="com.suse.litepaltest.Category"/>
+    </list>
+</litepal>
