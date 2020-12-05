@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">NotificationTest</string>
+    <string name="channel_high">High events</string>
+    <string name="channel_default">Default events</string>
+    <string name="channel_low">Low events</string>
+    <string name="channel_min">Min events</string>
 </resources>
