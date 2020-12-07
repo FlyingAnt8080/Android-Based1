@@ -13,6 +13,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.suse.networktest.utils.HttpCallbackListener;
 import com.suse.networktest.utils.HttpUtils;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
@@ -57,7 +58,7 @@ public class MainActivity extends AppCompatActivity{
             //sendRequestWithOkHttp();
 
             //测试HttpUtils
-            HttpUtils.sendOkHttpRequest("http://192.168.101.8:8082/get_data.json",
+            /*HttpUtils.sendOkHttpRequest("http://192.168.101.10:8082/get_data.json",
                     new Callback() {
                         @Override
                         public void onFailure(@NotNull Call call, @NotNull IOException e) {
@@ -68,7 +69,18 @@ public class MainActivity extends AppCompatActivity{
                         public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                             parseJSONWithGSON(response.body().string());
                         }
-                    });
+                    });*/
+            HttpUtils.sendHttpRequest("http://192.168.101.10:8082/get_data.json", new HttpCallbackListener() {
+                @Override
+                public void onFinish(String response) {
+                    parseJSONWithGSON(response);
+                }
+
+                @Override
+                public void onError(Exception e) {
+                    Log.e(TAG, "onFailure: ",e);
+                }
+            });
         });
     }
 

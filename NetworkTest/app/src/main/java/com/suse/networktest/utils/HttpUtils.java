@@ -1,5 +1,12 @@
 package com.suse.networktest.utils;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.widget.Toast;
+
+import com.suse.networktest.MyApplication;
+
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -16,6 +23,9 @@ public class HttpUtils {
      */
     public static void sendHttpRequest(final String address,
                                        final  HttpCallbackListener listener){
+        if (!isNetworkAvailable()){
+            Toast.makeText(MyApplication.getContext(), "network is unavailable", Toast.LENGTH_SHORT).show();
+        }
         new Thread(()->{
             HttpURLConnection connection = null;
             BufferedReader reader = null;
@@ -53,6 +63,17 @@ public class HttpUtils {
                 }
             }
         }).start();
+    }
+
+    //判断网络是否可用
+    private static boolean isNetworkAvailable() {
+        Context context = MyApplication.getContext();
+        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+        if (networkInfo != null){
+            return networkInfo.isAvailable();
+        }
+        return false;
     }
 
     /**
