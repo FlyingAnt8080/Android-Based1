@@ -1,9 +1,13 @@
 package com.suse.coolweather.util;
 
 import android.text.TextUtils;
+
+import com.google.gson.Gson;
 import com.suse.coolweather.db.City;
 import com.suse.coolweather.db.County;
 import com.suse.coolweather.db.Province;
+import com.suse.coolweather.gson.Weather;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -91,4 +95,9 @@ public class Utility {
         return false;
     }
 
+    public static Weather handleWeather(String weatherString) {
+        Gson gson = new Gson();
+       Weather weather =  gson.fromJson(weatherString,Weather.class);
+        return weather;
+    }
 }
