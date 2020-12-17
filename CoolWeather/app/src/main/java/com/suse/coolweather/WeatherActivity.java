@@ -7,6 +7,8 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
+
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
@@ -28,6 +30,7 @@ import com.suse.coolweather.gson.Forecasts;
 import com.suse.coolweather.gson.Now;
 import com.suse.coolweather.gson.Suggestions;
 import com.suse.coolweather.gson.Weather;
+import com.suse.coolweather.service.AutoUpdateService;
 import com.suse.coolweather.util.API;
 import com.suse.coolweather.util.HttpUtil;
 import com.suse.coolweather.util.Utility;
@@ -332,6 +335,10 @@ public class WeatherActivity extends AppCompatActivity {
                 //将weather天气数据保存到共享参数中
                 saveToSharedPreferences();
             }
+            //开启后台定时更新服务
+            Intent intent = new Intent(WeatherActivity.this, AutoUpdateService.class);
+            startService(intent);
+
             swipeRefresh.setRefreshing(false);
             String cityName = mWeather.cityName;
             String updateTime = mWeather.now.updateTime;
