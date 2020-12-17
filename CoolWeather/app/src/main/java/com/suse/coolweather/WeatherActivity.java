@@ -1,6 +1,9 @@
 package com.suse.coolweather;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
@@ -12,6 +15,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -37,6 +41,7 @@ import java.util.Date;
 
 
 public class WeatherActivity extends AppCompatActivity {
+    public SwipeRefreshLayout swipeRefresh;
     private ScrollView weatherLayout;
     private TextView titleCity;
     private TextView titleUpdateTime;
@@ -49,10 +54,12 @@ public class WeatherActivity extends AppCompatActivity {
     private TextView carWashText;
     private TextView sportText;
     private ImageView bingPicImg;
+    public DrawerLayout drawerLayout;
+    private Button navButton;
 
-    private Weather mWeather;
+    public Weather mWeather;
     //用于标志是否三个网络请求都成功返回数据
-    private static int count;
+    public static int count;
     private static final String TAG = "WeatherActivity";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,7 +85,10 @@ public class WeatherActivity extends AppCompatActivity {
         carWashText = findViewById(R.id.car_wash_text);
         sportText = findViewById(R.id.sport_text);
         bingPicImg = findViewById(R.id.bing_pic_img);
-
+        swipeRefresh = findViewById(R.id.swipe_refresh);
+        swipeRefresh.setColorSchemeResources(R.color.purple_500);
+        drawerLayout = findViewById(R.id.drawer_layout);
+        navButton = findViewById(R.id.nav_button);
         count = 0;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String weatherString = prefs.getString("weather",null);
@@ -91,16 +101,23 @@ public class WeatherActivity extends AppCompatActivity {
             //无缓存时去服务器查询天气
             String county_name = getIntent().getStringExtra("county_name");
             mWeather = new Weather();
-            mWeather.cityName = county_name;
             weatherLayout.setVisibility(View.INVISIBLE);
             requestLocationId(county_name);
         }
+        //设置背景图片
         String bingPic = prefs.getString("bing_pic",null);
         if (bingPic != null){
             Glide.with(this).load(bingPic).into(bingPicImg);
         }else {
             loadBingPic();
         }
+        //设置下拉刷新
+        swipeRefresh.setOnRefreshListener(()->{
+            requestWeather(mWeather.locationId);
+            count = 0;
+        });
+        //弹出侧边菜单按钮
+        navButton.setOnClickListener((view)-> drawerLayout.openDrawer(GravityCompat.START));
     }
 
     /**
@@ -266,6 +283,7 @@ public class WeatherActivity extends AppCompatActivity {
      * @param countyName
      */
     public void requestLocationId(String countyName){
+        mWeather.cityName = countyName;
         String address = API.LOCATION_ID_URL + "location=" + countyName + "&key=" + API.KEY;
         HttpUtil.sendOkHttpRequest(address, new Callback() {
             @Override
@@ -276,6 +294,8 @@ public class WeatherActivity extends AppCompatActivity {
                     if(locationObject.getInt("code")==200){
                         JSONArray jsonArray = locationObject.getJSONArray("location");
                         String locationId = jsonArray.getJSONObject(0).getString("id");
+                        //保存当前地区的locationId
+                        mWeather.locationId = locationId;
                         requestWeather(locationId);
                         //获取背景图片
                         loadBingPic();
@@ -305,9 +325,6 @@ public class WeatherActivity extends AppCompatActivity {
     }
 
     private void showWeatherInfo(){
-        /*if (count != -1){
-            count++;
-        }*/
         //count=4说明四个请求全部成功返回,count=-1说明已有缓存数据
         if (count == 4 || count == -1) {
             Log.d(TAG, "showWeatherInfo.............");
@@ -315,6 +332,7 @@ public class WeatherActivity extends AppCompatActivity {
                 //将weather天气数据保存到共享参数中
                 saveToSharedPreferences();
             }
+            swipeRefresh.setRefreshing(false);
             String cityName = mWeather.cityName;
             String updateTime = mWeather.now.updateTime;
             //格式时间
@@ -369,8 +387,11 @@ public class WeatherActivity extends AppCompatActivity {
     }
 
     private void showToast(String info){
-        runOnUiThread(()->{
+        runOnUiThread(()-> {
             Toast.makeText(this, info, Toast.LENGTH_SHORT).show();
+            //失败了才会弹Toast，同时关闭下拉刷新
+            swipeRefresh.setRefreshing(false);
         });
+
     }
 }
